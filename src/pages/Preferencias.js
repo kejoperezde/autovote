@@ -6,20 +6,12 @@ import apiClient from "../api/client"; // Asegúrate de que esta ruta sea correc
 import InternalNavbar from "../components/InternalNavbar";
 
 const Preferencias = () => {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [categorias, setCategorias] = useState([]);
   const [respuestas, setRespuestas] = useState({});
 
-  // VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
   useEffect(() => {
-    if (!isLoading && !user) {
-      navigate("/");
-    }
-  }, [user, isLoading, navigate]);
-
-  useEffect(() => {
-    if (!user) return; // No hacer nada si user no está disponible
 
     const fetchData = async () => {
       try {

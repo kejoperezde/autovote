@@ -89,13 +89,15 @@ const Navbar = () => {
   // --- FUNCION PARA CERRAR SESION
 
   return (
-    <nav className="navbar navbar-expand-lg bg-body-tertiary">
-      <div className="container-fluid">
-        <Link className="navbar-brand" to="/">
-          AutoVote
+    <nav className="navbar navbar-expand-lg navbar-dark bg-black py-3">
+      <div className="container">
+        <Link className="navbar-brand d-flex align-items-center" to="/">
+          <i className="bi bi-check2-circle me-2"></i>
+          <span className="fw-bold">AutoVote</span>
         </Link>
+
         <button
-          className="navbar-toggler"
+          className="navbar-toggler border-0"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
@@ -103,76 +105,38 @@ const Navbar = () => {
           aria-expanded="false"
           aria-label="Toggle navigation"
         >
-          <span className="navbar-toggler-icon" />
+          <span className="navbar-toggler-icon"></span>
         </button>
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav">
-            <li className="nav-item">
-              <Link className="nav-link active" aria-current="page" to="/">
-                Inicio
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link active" aria-current="page" to="/">
-                Características
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link active" aria-current="page" to="/">
-                Opiniones
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link active" aria-current="page" to="/">
-                Contáctanos
-              </Link>
-            </li>
 
-            {/* Aquí es donde mostramos el botón de login o el nombre del usuario */}
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav ms-auto">
             <li className="nav-item">
               {!user ? (
-                  <button
+                <button
                   onClick={handleLogin}
-                  className="btn btn-light d-flex align-items-center"
-                  style={{
-                    backgroundColor: "#e0e0e0",
-                    border: "1px solid #ccc",
-                    color: "#000",
-                    fontWeight: "500",
-                    gap: "10px",
-                    padding: "6px 12px"
-                  }}
+                  className="btn btn-sm btn-light d-flex align-items-center gap-2 px-3"
                 >
-                  {/* Imagen de Google dentro del botón */}
                   <img
                     src="https://developers.google.com/identity/images/g-logo.png"
                     alt="Google"
-                    style={{ width: "20px", height: "20px" }}
+                    style={{ width: "16px", height: "16px" }}
                   />
-                  Iniciar sesión con Google
+                  <span className="d-none d-sm-inline">Iniciar sesión</span>
                 </button>
               ) : (
-                <button
-                  className="btn btn-primary "
-                  onClick={handleLogoutClick}
-                >
-                  Cerrar sesión
-                </button>
-              )}
-            </li>
-            {/* Aquí es donde mostramos el botón de login o el nombre del usuario */}
-            <li className="nav-item">
-              {!user ? (
-                <button onClick={handleLogin} className="btn btn-primary" >
-                  Iniciar sesión con correo
-                </button>
-              ) : (
-                <button
-                  className="btn btn-primary "
-                  onClick={handleLogoutClick}
-                >
-                  Cerrar sesión
-                </button>
+                <div className="d-flex align-items-center gap-2">
+                  <span className="text-light me-2 d-none d-lg-inline small">
+                    <i className="bi bi-person-circle me-1"></i>
+                    {user.displayName || user.email}
+                  </span>
+                  <button
+                    className="btn btn-sm btn-outline-light px-3"
+                    onClick={handleLogoutClick}
+                  >
+                    <i className="bi bi-box-arrow-right me-1"></i>
+                    <span className="d-none d-sm-inline">Salir</span>
+                  </button>
+                </div>
               )}
             </li>
           </ul>

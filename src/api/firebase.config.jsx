@@ -29,7 +29,7 @@ export const signInWithGoogle = async () => {
     // console.log("Usuario autenticado: ", user);
     return user;  // Regresamos el usuario autenticado
   } catch (error) {
-    console.error("Error al iniciar sesión con Google: ", error);
+    // console.error("Error al iniciar sesión con Google: ", error);
     return null;
   }
 };
