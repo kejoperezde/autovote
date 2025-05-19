@@ -23,6 +23,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/preferencias" element={<Preferencias />} />
 
         {/* Rutas protegidas (requieren autenticación) */}
         <Route element={<ProtectedRoute />}>
@@ -33,9 +34,9 @@ function App() {
         </Route>
 
         {/* Rutas solo para votantes */}
-        <Route element={<ProtectedRoute allowedRoles={["votante"]} />}>
+        {/* <Route element={<ProtectedRoute allowedRoles={["votante"]} />}>
           <Route path="/preferencias" element={<Preferencias />} />
-        </Route>
+        </Route> */}
 
         {/* Rutas solo para votantes */}
         <Route element={<ProtectedRoute allowedRoles={["candidato"]} />}>
