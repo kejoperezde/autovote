@@ -25,29 +25,29 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* Rutas protegidas (requieren autenticación) */}
-        {/* <Route element={<ProtectedRoute />}>
+        <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/miperfil" element={<MiPerfil />} />
           <Route path="/buscar" element={<Buscar />} />
           <Route path="/estadisticas" element={<Estadisticas />} />
-        </Route> */}
+        </Route>
 
         {/* Rutas solo para votantes */}
-        {/* <Route element={<ProtectedRoute allowedRoles={["votante"]} />}>
+        <Route element={<ProtectedRoute allowedRoles={["votante"]} />}>
           <Route path="/preferencias" element={<Preferencias />} />
-        </Route> */}
+        </Route>
 
         {/* Rutas solo para votantes */}
-        {/* <Route element={<ProtectedRoute allowedRoles={["candidato"]} />}>
+        <Route element={<ProtectedRoute allowedRoles={["candidato"]} />}>
           <Route path="/crearpropuesta" element={<CrearPropuesta />} />
-        </Route> */}
+        </Route>
 
         {/* Rutas solo para administradores */}
-        {/* <Route element={<ProtectedRoute allowedRoles={["administrador"]} />}>
+        <Route element={<ProtectedRoute allowedRoles={["administrador"]} />}>
           <Route path="/validacion" element={<Validacion />} />
-        </Route> */}
+        </Route>
 
-        <Route path="/dashboard" element={<Dashboard />} />
+        {/* <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/miperfil" element={<MiPerfil />} />
         <Route path="/buscar" element={<Buscar />} />
         <Route path="/estadisticas" element={<Estadisticas />} />
@@ -56,7 +56,7 @@ function App() {
 
         <Route path="/crearpropuesta" element={<CrearPropuesta />} />
 
-        <Route path="/validacion" element={<Validacion />} />
+        <Route path="/validacion" element={<Validacion />} /> */}
 
         <Route path="*" element={<Home />} />
       </Routes>

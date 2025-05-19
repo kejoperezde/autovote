@@ -143,6 +143,7 @@ const InternalNavbar = () => {
                         objectFit: "cover",
                       }}
                       loading="lazy"
+                      alt=""
                     />
                   ) : (
                     <span
@@ -182,6 +183,7 @@ const InternalNavbar = () => {
                         className="dropdown-item d-flex align-items-center"
                         href="https://forms.gle/uqyLpittpqKoygNTA"
                         target="_blank"
+                        rel="noopener noreferrer"
                       >
                         <FaPoll className="me-1" />
                         Encuesta de satisfacción
@@ -193,6 +195,7 @@ const InternalNavbar = () => {
                       className="dropdown-item d-flex align-items-center"
                       href="https://forms.gle/5CccXPmDh3RMXJfu5"
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
                       <FaPoll className="me-1" />
                       Encuesta de satisfacción

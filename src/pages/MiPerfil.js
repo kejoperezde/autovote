@@ -7,8 +7,8 @@ import {
   storage,
   ref,
   uploadBytes,
-  getDownloadURL,
-  deleteObject
+  getDownloadURL
+  
 } from "../api/firebase.config";
 
 const MiPerfil = () => {
@@ -337,7 +337,7 @@ const MiPerfil = () => {
                 ) : (
                   <div className="col-md-6">
                     <label className="form-label">Cédula Política &nbsp;</label>
-                    {validacion == 'valida' && (
+                    {validacion === 'valida' && (
                       <span className="badge bg-success">
                         <i className="bi bi-check-circle-fill me-1"></i>
                         Cédula validada

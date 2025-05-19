@@ -73,7 +73,7 @@ const PropuestasList = () => {
     return matchesSearch && matchesCategoria;
   });
 
-  const sortedPropuestas = filteredPropuestas.sort((a, b) => {
+  filteredPropuestas.sort((a, b) => {
     const votosA = a.votos?.length || 0;
     const votosB = b.votos?.length || 0;
 
@@ -234,6 +234,7 @@ const PropuestasList = () => {
                                     className="img-fluid rounded-circle"
                                     style={{ width: "40px", height: "40px" }}
                                     loading="lazy"
+                                    alt=""
                                   />
                                 ) : (
                                   <span className="symbol-label bg-light-primary text-primary fs-6 fw-bold">
@@ -371,7 +372,7 @@ const PropuestasList = () => {
                               alt={`${selectedPropuesta.politico.nombre} ${selectedPropuesta.politico.apellido}`}
                               className="img-fluid rounded-circle"
                               style={{ width: "120px", height: "120px" }}
-                              loading="lazy"
+                              loading="lazy"                              
                             />
                           ) : (
                             <div className="symbol symbol-120px symbol-circle bg-light-primary">

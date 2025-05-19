@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "../style/Preferencias.css"; // Asegúrate de tener este archivo CSS para los estilos
@@ -92,15 +92,11 @@ const Preferencias = () => {
       const usuario_id = user.uid;
 
       // 3. Enviar los datos a la API
-      const response = await apiClient.put(
-        `votante/${usuario_id}`,
-        datosParaAPI,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      await apiClient.put(`votante/${usuario_id}`, datosParaAPI, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       alert("Preferencias guardadas correctamente");
 

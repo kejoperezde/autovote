@@ -81,21 +81,6 @@ const Login = () => {
     cedula_politica: "",
   });
 
-  // Estado inicial fuera del componente
-  const initialFormState = {
-    user: "Votante",
-    nombre: "",
-    apellido: "",
-    edad: 18,
-    correo: "",
-    codigo_postal: "",
-    colonia: "",
-    ciudad: "",
-    estado: "",
-    candidatura: "",
-    cedula_politica: "",
-  };
-
   // --- VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
   const { user, login, isLoading } = useAuth();
   useEffect(() => {
@@ -103,7 +88,7 @@ const Login = () => {
     if (!isLoading && user) {
       navigate("/dashboard"); // Redirigir a la página de inicio si el usuario no está autenticado
     }
-  }, [isLoading]);
+  }, [isLoading, user, navigate]); // Dependencias: isLoading y user
   // --- VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
 
   // --- OBTENER USUARIO LOGUEADO DE FIREBASE
