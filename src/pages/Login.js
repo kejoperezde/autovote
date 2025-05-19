@@ -183,7 +183,6 @@ const Login = () => {
           response = await apiClient.post("politico", requestData);
 
           // formData.cedula_politica = response.data.cedula_politica;
-          navigate("/dashboard");
         } catch (error) {
           console.error("Error al crear politico: ", error);
           return;
@@ -191,7 +190,6 @@ const Login = () => {
       } else if (formData.user === "Votante") {
         try {
           response = await apiClient.post("votante", requestData);
-          navigate("/preferencias");
         } catch (error) {
           console.error("Error al crear votante: ", error);
           return;
@@ -214,6 +212,12 @@ const Login = () => {
         };
 
         login(userk);
+
+        if (formData.user === "Candidato") {
+          navigate("/dashboard");
+        } else if (formData.user === "Votante") {
+          navigate("/preferencias");
+        }
       }
 
       // setFormData(initialFormState); // Resetear formulario
