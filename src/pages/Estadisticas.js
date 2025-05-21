@@ -382,7 +382,7 @@ const Estadisticas = () => {
             </>
         );
     }
-
+    
     // Render for candidate
     if (user.tipo === "candidato" && candidateData) {
         return (
