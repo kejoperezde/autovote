@@ -76,29 +76,99 @@ const Estadisticas = () => {
         }
     }, [user, isLoading]); // Añadimos isLoading como dependencia
 
+    // Función para agrupar edades en intervalos
+    const agruparEdades = (edades) => {
+        const grupos = {
+            '18-25': { min: 18, max: 25, total: 0 },
+            '26-35': { min: 26, max: 35, total: 0 },
+            '36-45': { min: 36, max: 45, total: 0 },
+            '46-55': { min: 46, max: 55, total: 0 },
+            '56-65': { min: 56, max: 65, total: 0 },
+            '66+': { min: 66, max: 200, total: 0 }
+        };
+
+        edades.forEach(edad => {
+            for (const [grupo, rango] of Object.entries(grupos)) {
+                if (edad >= rango.min && edad <= rango.max) {
+                    grupos[grupo].total += 1;
+                    break;
+                }
+            }
+        });
+
+        return Object.entries(grupos).map(([nombre, datos]) => ({
+            name: nombre,
+            value: datos.total,
+            min: datos.min,
+            max: datos.max
+        })).filter(item => item.value > 0);
+    };
+
+    const normalizarUbicacion = (ubicacion) => {
+        if (!ubicacion) return "Sin ciudad";
+        return ubicacion
+            .trim() // Elimina espacios al inicio y final
+            .toLowerCase() // Convierte a minúsculas
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Elimina acentos
+            .replace(/\s+/g, ' '); // Reemplaza múltiples espacios por uno solo
+    };
+
     // Process data for admin view
     const adminData = useMemo(() => {
         const votantes = rawData.votantes.map(v => ({ ...v, tipo: "votante" }));
         const candidatos = rawData.candidatos.map(c => ({ ...c, tipo: "candidato" }));
         const todos = [...votantes, ...candidatos];
 
-        // Age data
-        const edades = {};
+        // Age data - ahora con intervalos
+        const edadesVotantes = [];
+        const edadesCandidatos = [];
+
         todos.forEach(u => {
-            const key = u.edad;
-            if (!edades[key]) {
-                edades[key] = { edad: key, votantes: 0, candidatos: 0 };
+            if (u.tipo === "votante") {
+                edadesVotantes.push(u.edad);
+            } else {
+                edadesCandidatos.push(u.edad);
             }
-            edades[key][u.tipo === "votante" ? "votantes" : "candidatos"] += 1;
         });
 
-        // Location data
+        const edadData = [
+            { grupo: '18-25', min: 18, max: 25, votantes: 0, candidatos: 0 },
+            { grupo: '26-35', min: 26, max: 35, votantes: 0, candidatos: 0 },
+            { grupo: '36-45', min: 36, max: 45, votantes: 0, candidatos: 0 },
+            { grupo: '46-55', min: 46, max: 55, votantes: 0, candidatos: 0 },
+            { grupo: '56-65', min: 56, max: 65, votantes: 0, candidatos: 0 },
+            { grupo: '66+', min: 66, max: 200, votantes: 0, candidatos: 0 }
+        ];
+
+        todos.forEach(u => {
+            const edad = u.edad;
+            for (const grupo of edadData) {
+                if (edad >= grupo.min && edad <= grupo.max) {
+                    if (u.tipo === "votante") {
+                        grupo.votantes += 1;
+                    } else {
+                        grupo.candidatos += 1;
+                    }
+                    break;
+                }
+            }
+        });
+
+        // Filtrar solo los grupos con datos
+        const edadDataFiltrada = edadData.filter(g => g.votantes > 0 || g.candidatos > 0);
+
+        // Location data - con normalización
         const ciudades = {};
         todos.forEach(u => {
-            const key = u.ciudad || "Sin ciudad";
+            const key = normalizarUbicacion(u.ciudad);
             ciudades[key] = (ciudades[key] || 0) + 1;
         });
-        const ubicacionData = Object.entries(ciudades).map(([name, total]) => ({ name, total }));
+
+        // Convertir a array y capitalizar la primera letra
+        const ubicacionData = Object.entries(ciudades).map(([name, total]) => ({
+            name: name.charAt(0).toUpperCase() + name.slice(1), // Capitalizar primera letra
+            total
+        })).sort((a, b) => b.total - a.total);
 
         // Category data
         const categorias = {};
@@ -116,11 +186,19 @@ const Estadisticas = () => {
         });
 
         return {
-            edadData: Object.values(edades).sort((a, b) => a.edad - b.edad),
+            edadData: edadDataFiltrada,
             ubicacionData: ubicacionData.sort((a, b) => b.total - a.total),
             categoriaData: Object.values(categorias)
         };
     }, [rawData]);
+
+    // Función para normalizar cualquier ID
+    const normalizarId = (id) => {
+        if (!id) return undefined;
+        if (typeof id === 'string') return id;
+        if (id.$oid) return id.$oid;
+        return id.toString(); // como último recurso
+    };
 
     // Process data for candidate view
     const candidateData = useMemo(() => {
@@ -145,7 +223,10 @@ const Estadisticas = () => {
 
         // Procesar votos de cada propuesta del candidato
         rawData.misPropuestas?.forEach(propuesta => {
-            if (propuesta.id_politico === rawData.miCandidato._id) {
+            const idPoliticoPropuesta = normalizarId(propuesta.id_politico);
+            const idPoliticoCandidato = normalizarId(rawData.miCandidato._id);
+
+            if (idPoliticoPropuesta === idPoliticoCandidato) {
                 // Registrar la propuesta si tiene votos
                 if (propuesta.votos?.length > 0) {
                     propuestasConVotos.add(propuesta._id);
@@ -158,8 +239,14 @@ const Estadisticas = () => {
                         votosPorCategoria[propuesta.categoria].votos += 1;
                     }
 
-                    // Registrar votantes únicos
-                    misVotantesIds.add(voto.id_votante.$oid);
+                    // Normalizar y registrar votantes únicos
+                    const idVotante = normalizarId(voto.id_votante);
+                    if (idVotante) {
+                        misVotantesIds.add(idVotante);
+
+                    } else {
+                        console.warn('ID de votante no válido:', voto.id_votante);
+                    }
                 });
             }
         });
@@ -177,18 +264,20 @@ const Estadisticas = () => {
             }
         });
 
+        // Procesar edades en intervalos
+        const edadesAgrupadas = agruparEdades(
+            rawData.votantes
+                .filter(v => misVotantesIds.has(v._id))
+                .map(v => v.edad)
+        );
+
         // Formatear datos para gráficos
         const votosPorCategoriaData = Object.values(votosPorCategoria)
             .filter(item => item.votos > 0)
             .sort((a, b) => b.votos - a.votos);
 
-        const edadesVotantesData = Object.entries(edadesVotantes)
-            .map(([edad, count]) => ({
-                name: `${edad} años`,
-                value: count,
-                edad: parseInt(edad)
-            }))
-            .sort((a, b) => a.edad - b.edad);
+        const edadesVotantesData = edadesAgrupadas
+            .sort((a, b) => a.min - b.min);
 
         const ubicacionVotantesData = Object.entries(ubicacionVotantes)
             .map(([ubicacion, count]) => ({
@@ -286,9 +375,12 @@ const Estadisticas = () => {
                                         <ResponsiveContainer>
                                             <BarChart data={adminData.edadData}>
                                                 <CartesianGrid strokeDasharray="3 3" />
-                                                <XAxis dataKey="edad" />
+                                                <XAxis dataKey="grupo" />
                                                 <YAxis />
-                                                <Tooltip />
+                                                <Tooltip
+                                                    formatter={(value, name) => [`${value} usuario(s)`, name === 'Votantes' ? 'Votantes' : 'Candidatos']}
+                                                    labelFormatter={(value) => `Edad: ${value}`}
+                                                />
                                                 <Legend />
                                                 <Bar dataKey="votantes" fill={COLORS[4]} name="Votantes" />
                                                 <Bar dataKey="candidatos" fill={COLORS[0]} name="Candidatos" />
@@ -330,7 +422,7 @@ const Estadisticas = () => {
                                                     formatter={(value, name, props) => [
                                                         value + " usuario(s)",
                                                         name
-                                                    ]} 
+                                                    ]}
                                                 />
                                                 <Legend />
                                             </PieChart>
@@ -357,12 +449,12 @@ const Estadisticas = () => {
                                             <BarChart data={adminData.categoriaData}>
                                                 <CartesianGrid strokeDasharray="3 3" />
                                                 <XAxis
-                                                        dataKey="categoria"
-                                                        angle={-45}
-                                                        textAnchor="end"
-                                                        height={170}
-                                                        tick={{ fontSize: 12 }}
-                                                    />
+                                                    dataKey="categoria"
+                                                    angle={-45}
+                                                    textAnchor="end"
+                                                    height={170}
+                                                    tick={{ fontSize: 12 }}
+                                                />
                                                 <YAxis />
                                                 <Tooltip />
                                                 <Legend />
@@ -382,7 +474,7 @@ const Estadisticas = () => {
             </>
         );
     }
-    
+
     // Render for candidate
     if (user.tipo === "candidato" && candidateData) {
         return (
