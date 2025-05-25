@@ -98,7 +98,7 @@ const Login = () => {
   // --- OBTENER USUARIO LOGUEADO DE FIREBASE
 
   // --- VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
-  const { user, login, isLoading } = useAuth();
+  const { login } = useAuth();
   /* useEffect(() => {
     // Solo redirige cuando la carga ha terminado Y no hay usuario
     if (!isLoading && user) {
