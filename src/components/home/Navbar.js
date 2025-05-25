@@ -58,7 +58,7 @@ const Navbar = () => {
 
   async function searchUserByEmail(email, photoURL) {
     try {
-      let tipo = "";
+      let tipo = "votante";
 
       let response = await apiClient.get(
         `votante/correo/${encodeURIComponent(email)}`
