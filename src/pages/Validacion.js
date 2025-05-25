@@ -30,16 +30,20 @@ const Validacion = () => {
   }, []);
 
   // Función para validar candidato
-  const validarCandidato = async (candidate_id) => {
+  const validarCandidato = async (candidateSelect) => {
+    if (candidateSelect.validacion === "valida") {
+      alert("Este candidato ya está validado.");
+      return;
+    }
     try {
-      const response = await apiClient.put(`/politico/${candidate_id}`, {
+      const response = await apiClient.put(`/politico/${candidateSelect._id}`, {
         validacion: "valida",
       });
       if (response.data._id) {
         alert("Candidato validado correctamente.");
         setCandidates((prevCandidates) =>
           prevCandidates.map((candidate) =>
-            candidate._id === candidate_id
+            candidate._id === candidateSelect._id
               ? { ...candidate, validacion: "valida" }
               : candidate
           )
@@ -328,7 +332,7 @@ const Validacion = () => {
                             </button>
                             <button
                               className="btn btn-sm btn-outline-success"
-                              onClick={() => validarCandidato(candidate._id)}
+                              onClick={() => validarCandidato(candidate)}
                               title="Validar candidato"
                             >
                               <i className="bi bi-check-circle-fill"></i>

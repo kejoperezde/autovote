@@ -8,6 +8,7 @@ import apiClient from "../../api/client";
 const Navbar = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const [user, setUser] = useState(null);
 
@@ -26,17 +27,38 @@ const Navbar = () => {
 
   // Función para manejar el inicio de sesión
   const handleLogin = async () => {
-    const loggedInUser = await signInWithGoogle();
+    try {
+      const loggedInUser = await signInWithGoogle();
+      setLoading(true); // Empieza la carga
 
-    if (loggedInUser) {
-      setUser(loggedInUser); // Actualizamos el estado con el usuario logueado
-      searchUserByEmail(loggedInUser.email, loggedInUser.photoURL);
+      if (loggedInUser) {
+        setUser(loggedInUser);
+
+        const userk = await searchUserByEmail(
+          loggedInUser.email,
+          loggedInUser.photoURL
+        );
+
+        setLoading(false); // Oculta la carga ANTES de navegar
+
+        if (userk) {
+          login(userk);
+          navigate("/dashboard");
+        } else {
+          navigate("/login");
+        }
+      } else {
+        setLoading(false);
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
     }
   };
 
   async function searchUserByEmail(email, photoURL) {
     try {
-      let tipo = "votante";
+      let tipo = "";
 
       let response = await apiClient.get(
         `votante/correo/${encodeURIComponent(email)}`
@@ -72,9 +94,10 @@ const Navbar = () => {
         };
 
         login(userk);
-        navigate("/dashboard");
+
+        return userk;
       } else {
-        navigate("/login");
+        return null;
       }
     } catch (error) {
       console.error("Error completo:", error);
@@ -89,60 +112,75 @@ const Navbar = () => {
   // --- FUNCION PARA CERRAR SESION
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-black py-3">
-      <div className="container">
-        <Link className="navbar-brand d-flex align-items-center" to="/">
-          <i className="bi bi-check2-circle me-2"></i>
-          <span className="fw-bold">AutoVote</span>
-        </Link>
+    <>
+      <nav className="navbar navbar-expand-lg navbar-dark bg-black py-3">
+        <div className="container">
+          <Link className="navbar-brand d-flex align-items-center" to="/">
+            <i className="bi bi-check2-circle me-2"></i>
+            <span className="fw-bold">AutoVote</span>
+          </Link>
 
-        <button
-          className="navbar-toggler border-0"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
+          <button
+            className="navbar-toggler border-0"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
 
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto">
-            <li className="nav-item">
-              {!user ? (
-                <button
-                  onClick={handleLogin}
-                  className="btn btn-sm btn-light d-flex align-items-center gap-2 px-3"
-                >
-                  <img
-                    src="https://developers.google.com/identity/images/g-logo.png"
-                    alt="Google"
-                    style={{ width: "16px", height: "16px" }}
-                  />
-                  <span className="d-none d-sm-inline">Iniciar sesión</span>
-                </button>
-              ) : (
-                <div className="d-flex align-items-center gap-2">
-                  <span className="text-light me-2 d-none d-lg-inline small">
-                    <i className="bi bi-person-circle me-1"></i>
-                    {user.displayName || user.email}
-                  </span>
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav ms-auto">
+              <li className="nav-item">
+                {!user ? (
                   <button
-                    className="btn btn-sm btn-outline-light px-3"
-                    onClick={handleLogoutClick}
+                    onClick={handleLogin}
+                    className="btn btn-sm btn-light d-flex align-items-center gap-2 px-3"
                   >
-                    <i className="bi bi-box-arrow-right me-1"></i>
-                    <span className="d-none d-sm-inline">Salir</span>
+                    <img
+                      src="https://developers.google.com/identity/images/g-logo.png"
+                      alt="Google"
+                      style={{ width: "16px", height: "16px" }}
+                    />
+                    <span className="d-none d-sm-inline">Iniciar sesión</span>
                   </button>
-                </div>
-              )}
-            </li>
-          </ul>
+                ) : (
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="text-light me-2 d-none d-lg-inline small">
+                      <i className="bi bi-person-circle me-1"></i>
+                      {user.displayName || user.email}
+                    </span>
+                    <button
+                      className="btn btn-sm btn-outline-light px-3"
+                      onClick={handleLogoutClick}
+                    >
+                      <i className="bi bi-box-arrow-right me-1"></i>
+                      <span className="d-none d-sm-inline">Salir</span>
+                    </button>
+                  </div>
+                )}
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+      {loading && (
+        <div className="container mt-5 text-center">
+          <div
+            className="spinner-border text-primary"
+            style={{ width: "2rem", height: "2rem" }}
+            role="status"
+          >
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <h4 className="mt-3">Iniciando sesión...</h4>
+          <p>Esto puede tomar unos momentos</p>
+        </div>
+      )}
+    </>
   );
 };
 
