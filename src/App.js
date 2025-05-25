@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 //Bootstrap
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
-
+// Componentes
+import ProtectedRoute from "./components/ProtectedRoute.js";
 // Páginas
 import Home from "./pages/Home.js";
 import Login from "./pages/Login.js";
@@ -13,9 +14,8 @@ import CrearPropuesta from "./pages/CrearPropuesta.js";
 import Validacion from "./pages/Validacion.js";
 import MiPerfil from "./pages/MiPerfil.js";
 import Buscar from "./pages/Buscar.js";
-// Componentes
-import ProtectedRoute from "./components/ProtectedRoute.js";
 import Estadisticas from "./pages/Estadisticas.js";
+import Votantes from "./pages/Votantes.js";
 
 function App() {
   return (
@@ -45,18 +45,8 @@ function App() {
         {/* Rutas solo para administradores */}
         <Route element={<ProtectedRoute allowedRoles={["administrador"]} />}>
           <Route path="/validacion" element={<Validacion />} />
+          <Route path="/votantes" element={<Votantes />} />
         </Route>
-
-        {/* <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/miperfil" element={<MiPerfil />} />
-        <Route path="/buscar" element={<Buscar />} />
-        <Route path="/estadisticas" element={<Estadisticas />} />
-
-        <Route path="/preferencias" element={<Preferencias />} />
-
-        <Route path="/crearpropuesta" element={<CrearPropuesta />} />
-
-        <Route path="/validacion" element={<Validacion />} /> */}
 
         <Route path="*" element={<Home />} />
       </Routes>

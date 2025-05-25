@@ -1,7 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const HeroSection = () => {
+  const { user } = useAuth();
+
   return (
     <div className="container py-5 my-4">
       <div className="row align-items-center g-5">
@@ -18,12 +21,14 @@ const HeroSection = () => {
             alinean con sus valores e intereses.
           </p>
           <div className="d-flex flex-wrap gap-3 mb-4">
-            <Link
-              className="btn btn-primary px-4 py-2 shadow-sm"
-              to="/dashboard"
-            >
-              Comenzar ahora
-            </Link>
+            {user?.uid && (
+              <Link
+                className="btn btn-primary px-4 py-2 shadow-sm"
+                to="/dashboard"
+              >
+                Ir a Dashboard
+              </Link>
+            )}
           </div>
         </div>
 

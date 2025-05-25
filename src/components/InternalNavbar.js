@@ -13,7 +13,8 @@ import {
   FaHome, // Dashboard
   FaPlus, // Crear propuesta
   FaCheckCircle, // Validación
-  FaPoll, // Validación
+  FaPoll,
+  FaUsers, // Validación
 } from "react-icons/fa";
 
 const InternalNavbar = () => {
@@ -105,15 +106,26 @@ const InternalNavbar = () => {
               </li>
             )}
             {user?.tipo === "administrador" && (
-              <li className="nav-item">
-                <Link
-                  className="nav-link d-flex align-items-center"
-                  to="/validacion"
-                >
-                  <FaCheckCircle className="me-1" />
-                  Validación
-                </Link>
-              </li>
+              <>
+                <li className="nav-item">
+                  <Link
+                    className="nav-link d-flex align-items-center"
+                    to="/validacion"
+                  >
+                    <FaCheckCircle className="me-1" />
+                    Validación
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    className="nav-link d-flex align-items-center"
+                    to="/votantes"
+                  >
+                    <FaUsers className="me-1" />
+                    Votantes
+                  </Link>
+                </li>
+              </>
             )}
           </ul>
 

@@ -81,27 +81,31 @@ const Login = () => {
     cedula_politica: "",
   });
 
-  // --- VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
-  const { user, login, isLoading } = useAuth();
-  useEffect(() => {
-    // Solo redirige cuando la carga ha terminado Y no hay usuario
-    if (!isLoading && user) {
-      navigate("/dashboard"); // Redirigir a la página de inicio si el usuario no está autenticado
-    }
-  }, [isLoading, user, navigate]); // Dependencias: isLoading y user
-  // --- VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
-
   // --- OBTENER USUARIO LOGUEADO DE FIREBASE
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (!currentUser) {
+        navigate("/"); // Redirigir a la página de inicio si no hay usuario
+      }
       setUserg(currentUser);
     });
+
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [navigate, userg]); // Dependencias: navigate y userg
   // --- OBTENER USUARIO LOGUEADO DE FIREBASE
+
+  // --- VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
+  const { user, login, isLoading } = useAuth();
+  /* useEffect(() => {
+    // Solo redirige cuando la carga ha terminado Y no hay usuario
+    if (!isLoading && user) {
+      navigate("/dashboard"); // Redirigir a la página de inicio si el usuario no está autenticado
+    }
+  }, [isLoading, user, navigate]); // Dependencias: isLoading y user */
+  // --- VALIDAR QUE EL USUARIO ESTÉ LOGUEADO
 
   // --- SETEAR NOMBRE Y APELLIDO DEL USUARIO LOGUEADO
   useEffect(() => {
@@ -211,13 +215,12 @@ const Login = () => {
           tipo: formData.user.toLowerCase(),
         };
 
-        login(userk);
+        await login(userk);
 
-        if (formData.user === "Candidato") {
-          navigate("/dashboard");
-        } else if (formData.user === "Votante") {
-          navigate("/preferencias");
-        }
+        const redirectPath =
+          formData.user === "Candidato" ? "/crearpropuesta" : "/preferencias";
+        console.log(`${formData.user} creado correctamente`);
+        navigate(redirectPath);
       }
 
       // setFormData(initialFormState); // Resetear formulario
@@ -250,7 +253,7 @@ const Login = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `https://api.copomex.com/query/info_cp/${cp}?token=591a2db3-0048-4dce-91cf-12b7e5bfa4bd`
+          `https://api.copomex.com/query/info_cp/${cp}?token=71732f81-82f5-423b-b002-0ed598deb0db`
         );
 
         // Verificación segura de la respuesta
@@ -298,104 +301,107 @@ const Login = () => {
   // --- PARA CODIGO POSTAL
 
   return (
-    <form className="registration-container" onSubmit={handleSubmit}>
-      <div className="registration-header">
-        <button
-          className="button-login back-button"
-          onClick={handleLogoutClick}
-        >
-          Cancelar
-        </button>
-        <label className="registration-title">
-          Auto<label className="registration-title-vote">Vote</label>
-        </label>
-        <button className="button-login submit-button-login" type="submit">
-          Continuar
-        </button>
+    <form className="container py-4" onSubmit={handleSubmit}>
+      {/* Header */}
+      <div className="d-flex justify-content-center mb-4">
+        <h1 className="m-0 text-center">
+          <span className="text-primary">AutoVote</span>
+        </h1>
       </div>
 
-      <div className="registration-style">
-        <div className="section-header">
-          <label className="extra">Datos adicionales de registro</label>
-          <select
-            className="registration-select"
-            onChange={handleChange}
-            name="user"
-            value={formData.user}
-          >
-            <option value="Votante">Votante</option>
-            <option value="Candidato">Candidato</option>
-          </select>
-        </div>
-
-        <div className="registration-card">
-          <div className="form-section">
-            <label className="form-subheader">Personales</label>
-            <div className="form-fields">
-              <div className="form-group">
-                <label className="form-label">Nombre</label>
-                <input
-                  name="nombre"
-                  value={formData.nombre}
+      {/* Contenido principal */}
+      <div className="row justify-content-center">
+        <div className="col-lg-8">
+          {/* Sección de selección de tipo de usuario */}
+          <div className="card mb-4 shadow-sm">
+            <div className="card-header bg-light">
+              <h5 className="mb-0">Datos adicionales de registro</h5>
+            </div>
+            <div className="card-body">
+              <div className="mb-3">
+                <label className="form-label">Tipo de usuario</label>
+                <select
+                  className="form-select"
                   onChange={handleChange}
-                  type="text"
-                  className="form-input"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Apellido</label>
-                <input
-                  name="apellido"
-                  value={formData.apellido}
-                  onChange={handleChange}
-                  type="text"
-                  className="form-input"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Edad</label>
-                <input
-                  name="edad"
-                  onChange={handleChange}
-                  type="number"
-                  min="18"
-                  value={formData.edad}
-                  className="form-input"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Correo</label>
-                <input
-                  name="correo"
-                  value={formData.correo}
-                  onChange={handleChange}
-                  type="email"
-                  className="form-input"
-                  required
-                  disabled
-                />
+                  name="user"
+                  value={formData.user}
+                >
+                  <option value="Votante">Votante</option>
+                  <option value="Candidato">Candidato</option>
+                </select>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Sección de búsqueda de ubicación */}
-        <div className="registration-card">
-          <div className="form-section">
-            <label className="form-subheader">Ubicación</label>
+          {/* Sección de datos personales */}
+          <div className="card mb-4 shadow-sm">
+            <div className="card-header bg-light">
+              <h5 className="mb-0">Datos personales</h5>
+            </div>
+            <div className="card-body">
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label className="form-label">Nombre</label>
+                  <input
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                    type="text"
+                    className="form-control"
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Apellido</label>
+                  <input
+                    name="apellido"
+                    value={formData.apellido}
+                    onChange={handleChange}
+                    type="text"
+                    className="form-control"
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Edad</label>
+                  <input
+                    name="edad"
+                    onChange={handleChange}
+                    type="number"
+                    min="18"
+                    value={formData.edad}
+                    className="form-control"
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Correo</label>
+                  <input
+                    name="correo"
+                    value={formData.correo}
+                    onChange={handleChange}
+                    type="email"
+                    className="form-control"
+                    required
+                    disabled
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <div className="location-search-container">
-              <div className="mb-3">
-                <label htmlFor="postalCode" className="form-label">
-                  Buscar por Código Postal
-                </label>
-                <div className="search-input-group">
+          {/* Sección de ubicación */}
+          <div className="card mb-4 shadow-sm">
+            <div className="card-header bg-light">
+              <h5 className="mb-0">Ubicación</h5>
+            </div>
+            <div className="card-body">
+              <div className="mb-4">
+                <label className="form-label">Buscar por Código Postal</label>
+                <div className="input-group">
                   <input
                     type="text"
-                    className="form-input"
+                    className="form-control"
                     id="postalCode"
                     maxLength="5"
                     value={postalCode}
@@ -403,123 +409,144 @@ const Login = () => {
                     placeholder="Ej. 11520"
                   />
                   {loading && (
-                    <div className="search-loading">
-                      <span className="spinner"></span> Buscando...
-                    </div>
+                    <span className="input-group-text">
+                      <span className="spinner-border spinner-border-sm me-2"></span>
+                      Buscando...
+                    </span>
                   )}
-                  {error && <div className="search-error">{error}</div>}
                 </div>
+                {error && (
+                  <div className="alert alert-danger mt-2">{error}</div>
+                )}
               </div>
 
               {addressData.length > 0 && (
-                <div className="location-results">
-                  <div className="mb-3">
-                    <label className="form-label">Colonias disponibles</label>
-                    <select
-                      className="form-select"
-                      onChange={(e) =>
-                        handleAddressSelect(addressData[e.target.value])
-                      }
-                    >
-                      <option value="">Selecciona una colonia</option>
-                      {addressData.map((item, index) => (
-                        <option key={index} value={index}>
-                          {item.response.asentamiento ||
-                            "Colonia no especificada"}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="form-fields">
-              <div className="form-group">
-                <label className="form-label">Código postal</label>
-                <input
-                  name="codigo_postal"
-                  value={formData.codigo_postal}
-                  onChange={handleChange}
-                  type="text"
-                  className="form-input"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Colonia</label>
-                <input
-                  name="colonia"
-                  value={formData.colonia}
-                  onChange={handleChange}
-                  type="text"
-                  className="form-input"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Ciudad</label>
-                <input
-                  name="ciudad"
-                  value={formData.ciudad}
-                  onChange={handleChange}
-                  type="text"
-                  className="form-input"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Estado</label>
-                <input
-                  name="estado"
-                  value={formData.estado}
-                  onChange={handleChange}
-                  type="text"
-                  className="form-input"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {!tipoUsuario(formData.user) && (
-          <div className="registration-card">
-            <div className="form-section">
-              <div className="form-fields">
-                <label className="form-subheader">Candidato</label>
-                <div className="form-group">
-                  <label className="form-label">Candidatura</label>
+                <div className="mb-4">
+                  <label className="form-label">Colonias disponibles</label>
                   <select
-                    name="candidatura"
-                    value={formData.candidatura}
-                    onChange={handleChange}
-                    className="form-input"
-                    required
+                    className="form-select"
+                    onChange={(e) =>
+                      handleAddressSelect(addressData[e.target.value])
+                    }
                   >
-                    <option value="">Seleccione una opción</option>
-                    <option value="presidente">Presidente</option>
-                    <option value="gobernador">Gobernador</option>
-                    <option value="presidente municipal">
-                      Presidente Municipal
-                    </option>
+                    <option value="">Selecciona una colonia</option>
+                    {addressData.map((item, index) => (
+                      <option key={index} value={index}>
+                        {item.response.asentamiento ||
+                          "Colonia no especificada"}
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Cédula política</label>
+              )}
+
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label className="form-label">Código postal</label>
                   <input
-                    name="cedula_politica"
-                    // value={formData.cedula_politica}
-                    onChange={handleFileChange}
-                    type="file"
-                    className="form-input"
+                    name="codigo_postal"
+                    value={formData.codigo_postal}
+                    onChange={handleChange}
+                    type="text"
+                    className="form-control"
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Colonia</label>
+                  <input
+                    name="colonia"
+                    value={formData.colonia}
+                    onChange={handleChange}
+                    type="text"
+                    className="form-control"
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Ciudad</label>
+                  <input
+                    name="ciudad"
+                    value={formData.ciudad}
+                    onChange={handleChange}
+                    type="text"
+                    className="form-control"
+                    required
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label">Estado</label>
+                  <input
+                    name="estado"
+                    value={formData.estado}
+                    onChange={handleChange}
+                    type="text"
+                    className="form-control"
                     required
                   />
                 </div>
               </div>
             </div>
           </div>
-        )}
+
+          {/* Sección de candidato (condicional) */}
+          {!tipoUsuario(formData.user) && (
+            <div className="card mb-4 shadow-sm">
+              <div className="card-header bg-light">
+                <h5 className="mb-0">Información de candidato</h5>
+              </div>
+              <div className="card-body">
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label">Candidatura</label>
+                    <select
+                      name="candidatura"
+                      value={formData.candidatura}
+                      onChange={handleChange}
+                      className="form-select"
+                      required
+                    >
+                      <option value="">Seleccione una opción</option>
+                      <option value="presidente">Presidente</option>
+                      <option value="gobernador">Gobernador</option>
+                      <option value="presidente municipal">
+                        Presidente Municipal
+                      </option>
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Cédula política</label>
+                    <input
+                      name="cedula_politica"
+                      onChange={handleFileChange}
+                      type="file"
+                      className="form-control"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Botones al final - mismo renglón, ancho completo */}
+      <div className="row justify-content-center">
+        <div className="col-lg-8">
+          <div className="d-flex gap-3">
+            <button
+              className="btn btn-outline-secondary flex-fill py-2"
+              onClick={handleLogoutClick}
+              type="button"
+            >
+              <i className="bi bi-arrow-left me-2"></i>Cancelar
+            </button>
+            <button className="btn btn-primary flex-fill py-2" type="submit">
+              Continuar <i className="bi bi-arrow-right ms-2"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </form>
   );

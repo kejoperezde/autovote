@@ -12,42 +12,46 @@ const Preferencias = () => {
   const [respuestas, setRespuestas] = useState({});
 
   useEffect(() => {
-
-    const fetchData = async () => {
-      try {
-        // Obtener preguntas
-        const preguntasResponse = await apiClient.get("votante/preguntas");
-        setCategorias(preguntasResponse.data.categorias);
-
-        // Inicializar respuestas vacías
-        const respuestasIniciales = {};
-        preguntasResponse.data.categorias.forEach((categoria) => {
-          categoria.preguntas.forEach((_, indexPregunta) => {
-            respuestasIniciales[`${categoria.numero}-${indexPregunta}`] = null;
-          });
-        });
-
-        // Obtener respuestas del usuario
+    if (user?.correo) {
+      const fetchData = async () => {
         try {
-          const respuestasResponse = await apiClient.get(`votante/${user.uid}`);
-          const respuestasAPI = respuestasResponse.data.preferencias?.reduce(
-            (acc, { categoria_id, pregunta_id, valoracion }) => {
-              acc[`${categoria_id}-${pregunta_id - 1}`] = valoracion;
-              return acc;
-            },
-            { ...respuestasIniciales } // Respuestas iniciales como base
-          );
-          setRespuestas(respuestasAPI || respuestasIniciales);
-        } catch (err) {
-          console.error("Error al obtener respuestas:", err);
-          setRespuestas(respuestasIniciales);
-        }
-      } catch (err) {
-        console.error("Error al obtener preguntas:", err);
-      }
-    };
+          // Obtener preguntas
+          const preguntasResponse = await apiClient.get("votante/preguntas");
+          setCategorias(preguntasResponse.data.categorias);
 
-    fetchData();
+          // Inicializar respuestas vacías
+          const respuestasIniciales = {};
+          preguntasResponse.data.categorias.forEach((categoria) => {
+            categoria.preguntas.forEach((_, indexPregunta) => {
+              respuestasIniciales[`${categoria.numero}-${indexPregunta}`] =
+                null;
+            });
+          });
+
+          // Obtener respuestas del usuario
+          try {
+            const respuestasResponse = await apiClient.get(
+              `votante/${user.uid}`
+            );
+            const respuestasAPI = respuestasResponse.data.preferencias?.reduce(
+              (acc, { categoria_id, pregunta_id, valoracion }) => {
+                acc[`${categoria_id}-${pregunta_id - 1}`] = valoracion;
+                return acc;
+              },
+              { ...respuestasIniciales } // Respuestas iniciales como base
+            );
+            setRespuestas(respuestasAPI || respuestasIniciales);
+          } catch (err) {
+            console.error("Error al obtener respuestas:", err);
+            setRespuestas(respuestasIniciales);
+          }
+        } catch (err) {
+          console.error("Error al obtener preguntas:", err);
+        }
+      };
+
+      fetchData();
+    }
   }, [user]); // Añadir user como dependencia
 
   const handleRatingChange = (categoriaNum, preguntaIndex, valor) => {
