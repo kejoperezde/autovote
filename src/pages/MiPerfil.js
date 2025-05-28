@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import InternalNavbar from "../components/InternalNavbar";
 import apiClient from "../api/client"; // Asegúrate de que la ruta sea correcta
 import { useAuth } from "../context/AuthContext";
@@ -8,7 +8,7 @@ import {
   ref,
   uploadBytes,
   getDownloadURL
-  
+
 } from "../api/firebase.config";
 
 const MiPerfil = () => {
@@ -28,6 +28,21 @@ const MiPerfil = () => {
   });
   const [validacion, setValidacion] = useState(null);
   const [editando, setEditando] = useState(false);
+  const [errores, setErrores] = useState({});
+  const [formularioValido, setFormularioValido] = useState(false);
+  const [datosOriginales, setDatosOriginales] = useState({
+    _id: "",
+    nombre: "",
+    apellido: "",
+    edad: 0,
+    correo: "",
+    codigo_postal: "",
+    colonia: "",
+    ciudad: "",
+    estado: "",
+    candidatura: "",
+    cedula_politica: "",
+  });
 
   // Realizar petición a la API para obtener los datos del usuario
   useEffect(() => {
@@ -36,6 +51,7 @@ const MiPerfil = () => {
         const cargarDatos = async () => {
           const response = await apiClient.get(`votante/${user.uid}`);
           setUsuario(response.data);
+          setDatosOriginales(response.data);
           setValidacion(response.data.validacion);
         };
         cargarDatos();
@@ -44,6 +60,7 @@ const MiPerfil = () => {
           const response = await apiClient.get(`politico/${user.uid}`);
           console.log(response.data);
           setUsuario(response.data);
+          setDatosOriginales(response.data);
           setValidacion(response.data.validacion);
         };
         cargarDatos();
@@ -51,6 +68,7 @@ const MiPerfil = () => {
         const cargarDatos = async () => {
           const response = await apiClient.get(`administrador/${user.uid}`);
           setUsuario(response.data);
+          setDatosOriginales(response.data);
           setValidacion(response.data.validacion);
         };
         cargarDatos();
@@ -58,16 +76,81 @@ const MiPerfil = () => {
     }
   }, [isLoading, user]);
 
+  const validarFormulario = useCallback(() => {
+    // Validar datos personales
+    if (!usuario.nombre?.trim() ||
+      !usuario.apellido?.trim() ||
+      usuario.edad <= 17 ||
+      usuario.edad > 120) {
+      return false;
+    }
+
+    // Validar datos de ubicación para votantes y candidatos
+    if (user.tipo !== "administrador") {
+      if (!usuario.codigo_postal?.trim() ||
+        !usuario.colonia?.trim() ||
+        !usuario.ciudad?.trim() ||
+        !usuario.estado?.trim()) {
+        return false;
+      }
+    }
+
+    // Validar datos de candidatura
+    if (user.tipo === "candidato") {
+      if (!usuario.candidatura) {
+        return false;
+      }
+      if (validacion === 'invalida' && !file) {
+        return false;
+      }
+    }
+
+    return true;
+  }, [usuario, validacion]);
+
+  const handleCancelar = () => {
+    setUsuario(datosOriginales); // Restaura los datos originales
+    setEditando(false);
+    setFile(null);
+    setErrores({}); // Limpia los errores
+  };
+
+  useEffect(() => {
+    setFormularioValido(validarFormulario());
+  }, [validarFormulario]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUsuario((prev) => ({
       ...prev,
       [name]: name === "edad" ? parseInt(value) || 0 : value,
     }));
+
+    // Validación en tiempo real para mostrar errores
+    if (errores[name]) {
+      setErrores(prev => {
+        const nuevosErrores = { ...prev };
+        delete nuevosErrores[name];
+        return nuevosErrores;
+      });
+    }
+
+    // Validación inmediata para campos requeridos
+    if ((name === "nombre" || name === "apellido" || name === "codigo_postal" || name === "colonia" || name === "ciudad" || name === "estado") && !value.trim()) {
+      setErrores(prev => ({ ...prev, [name]: "Este campo es requerido" }));
+    } else if (name === "edad" && (value <= 17 || value > 120)) {
+      setErrores(prev => ({ ...prev, [name]: "Edad inválida" }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validar campos antes de continuar
+    if (!formularioValido) {
+      alert("Por favor complete todos los campos requeridos correctamente");
+      return;
+    }
 
     try {
       let cedulaUrl = usuario.cedula_politica;
@@ -196,23 +279,25 @@ const MiPerfil = () => {
                 <label className="form-label">Nombre</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className={`form-control ${errores.nombre ? 'is-invalid' : ''}`}
                   name="nombre"
                   value={usuario.nombre}
                   onChange={handleChange}
                   readOnly={!editando}
                 />
+                {errores.nombre && <div className="invalid-feedback">{errores.nombre}</div>}
               </div>
               <div className="col-md-6">
                 <label className="form-label">Apellido</label>
                 <input
                   type="text"
-                  className="form-control"
+                  className={`form-control ${errores.apellido ? 'is-invalid' : ''}`}
                   name="apellido"
                   value={usuario.apellido}
                   onChange={handleChange}
                   readOnly={!editando}
                 />
+                {errores.apellido && <div className="invalid-feedback">{errores.apellido}</div>}
               </div>
             </div>
             <div className="row">
@@ -220,12 +305,15 @@ const MiPerfil = () => {
                 <label className="form-label">Edad</label>
                 <input
                   type="number"
-                  className="form-control"
+                  className={`form-control ${errores.edad ? 'is-invalid' : ''}`}
                   name="edad"
                   value={usuario.edad}
                   onChange={handleChange}
                   readOnly={!editando}
+                  min="18"
+                  max="120"
                 />
+                {errores.edad && <div className="invalid-feedback">{errores.edad}</div>}
               </div>
               <div className="col-md-8">
                 <label className="form-label">Correo</label>
@@ -250,34 +338,37 @@ const MiPerfil = () => {
                   <label className="form-label">Código Postal</label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={`form-control ${errores.codigo_postal ? 'is-invalid' : ''}`}
                     name="codigo_postal"
                     value={usuario.codigo_postal}
                     onChange={handleChange}
                     readOnly={!editando}
                   />
+                  {errores.codigo_postal && <div className="invalid-feedback">{errores.codigo_postal}</div>}
                 </div>
                 <div className="col-md-4">
                   <label className="form-label">Colonia</label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={`form-control ${errores.colonia ? 'is-invalid' : ''}`}
                     name="colonia"
                     value={usuario.colonia}
                     onChange={handleChange}
                     readOnly={!editando}
                   />
+                  {errores.colonia && <div className="invalid-feedback">{errores.colonia}</div>}
                 </div>
                 <div className="col-md-4">
                   <label className="form-label">Ciudad</label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={`form-control ${errores.ciudad ? 'is-invalid' : ''}`}
                     name="ciudad"
                     value={usuario.ciudad}
                     onChange={handleChange}
                     readOnly={!editando}
                   />
+                  {errores.ciudad && <div className="invalid-feedback">{errores.ciudad}</div>}
                 </div>
               </div>
               <div className="row">
@@ -285,12 +376,13 @@ const MiPerfil = () => {
                   <label className="form-label">Estado</label>
                   <input
                     type="text"
-                    className="form-control"
+                    className={`form-control ${errores.estado ? 'is-invalid' : ''}`}
                     name="estado"
                     value={usuario.estado}
                     onChange={handleChange}
                     readOnly={!editando}
                   />
+                  {errores.estado && <div className="invalid-feedback">{errores.estado}</div>}
                 </div>
               </div>
             </fieldset>
@@ -313,9 +405,7 @@ const MiPerfil = () => {
                     <option value="">Seleccione una opción</option>
                     <option value="presidente">Presidente</option>
                     <option value="gobernador">Gobernador</option>
-                    <option value="presidente municipal">
-                      Presidente municipal
-                    </option>
+                    <option value="presidente municipal">Presidente municipal</option>
                   </select>
                 </div>
                 {validacion === 'invalida' ? (
@@ -379,11 +469,11 @@ const MiPerfil = () => {
                   <button
                     type="button"
                     className="btn btn-secondary"
-                    onClick={() => setEditando(false)}
+                    onClick={handleCancelar}
                   >
                     Cancelar
                   </button>
-                  <button type="submit" className="btn btn-success">
+                  <button type="submit" className="btn btn-success" disabled={!formularioValido || !editando}>
                     Guardar Cambios
                   </button>
                 </>
