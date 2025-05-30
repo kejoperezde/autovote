@@ -36,7 +36,7 @@ const HeroSection = () => {
         <div className="col-md-6 order-md-2 order-1">
           <div className="position-relative">
             <img
-              src="/images/robot-votando.jpg"
+              src="/images/robot-votando.png"
               alt="Robot Votando"
               className="img-fluid rounded-4 shadow-lg w-100"
             />

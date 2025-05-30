@@ -116,7 +116,12 @@ const Navbar = () => {
       <nav className="navbar navbar-expand-lg navbar-dark bg-black py-3">
         <div className="container">
           <Link className="navbar-brand d-flex align-items-center" to="/">
-            <i className="bi bi-check2-circle me-2"></i>
+            <img
+              src="/images/Autovoteicon.png"
+              alt="AV Logo"
+              className="me-2"
+              style={{ height: '38px' }}
+            />
             <span className="fw-bold">AutoVote</span>
           </Link>
 

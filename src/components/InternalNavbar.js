@@ -47,7 +47,12 @@ const InternalNavbar = () => {
       <div className="container-fluid">
         {/* Logo/Marca */}
         <Link className="navbar-brand fw-bold d-flex align-items-center" to="/">
-          <FaShieldAlt className="me-2" />
+          <img
+            src="/images/Autovoteicon.png"
+            alt="AV Logo"
+            className="me-2"
+            style={{ height: "38px" }}
+          />
           AutoVote
         </Link>
 

@@ -271,7 +271,7 @@ const PropuestasList = () => {
           <div className="card-body">
             {/* Controles de búsqueda y filtro */}
             <div className="row mb-4">
-              <div className="col-md-3 mb-3 mb-md-0">
+              <div className="col-md-4 mb-4 mb-md-0">
                 <div className="input-group">
                   <span className="input-group-text">
                     <i className="bi bi-search"></i>
@@ -286,7 +286,7 @@ const PropuestasList = () => {
                 </div>
               </div>
 
-              <div className="col-md-3 mb-3 mb-md-0">
+              <div className="col-md-4 mb-4 mb-md-0">
                 <div className="input-group">
                   <span className="input-group-text">
                     <i className="bi bi-funnel-fill"></i>
@@ -306,7 +306,7 @@ const PropuestasList = () => {
                 </div>
               </div>
 
-              <div className="col-md-3 mb-3 mb-md-0">
+              {/* <div className="col-md-4 mb-4 mb-md-0">
                 <div className="input-group">
                   <span className="input-group-text">
                     <i className="bi bi-sort-down"></i>
@@ -322,7 +322,7 @@ const PropuestasList = () => {
                     <option value="fecha_asc">Más antiguas</option>
                   </select>
                 </div>
-              </div>
+              </div> */}
 
               {(() => {
                 // Mostrar botón solo si tiene permisos
@@ -330,7 +330,7 @@ const PropuestasList = () => {
                   if (user.tipo === "votante") {
                     return (
                       <>
-                        <div className="col-md-3 mb-3 mb-md-0">
+                        <div className="col-md-4 mb-4 mb-md-0">
                           <div className="input-group">
                             <span className="input-group-text">
                               <i className="bi bi-sort-down"></i>
